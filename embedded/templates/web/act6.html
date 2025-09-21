@@ -4,20 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- Fonts & Bootstrap -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600&display=swap" rel="stylesheet" />
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
 
   <title>Activity 6 - GPS Dashboard</title>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/act6.css') }}" />
-  <style>
-    #map { height: 400px; border-radius: 10px; }
-    #map-container { display: none; }
-    canvas { max-height: 300px; }
-  </style>
+
 </head>
 <body>
   <div class="page-wrapper d-flex flex-column min-vh-100">
@@ -43,53 +40,59 @@
 
     <!-- Main Dashboard -->
     <main class="container my-5 pt-5">
-      <div class="dashboard-container shadow-sm p-4 rounded bg-white">
-        <h1 class="text-center mb-3" style="color: var(--main-orange);">GPS Dashboard</h1>
-        <p id="countdown" class="text-center mb-4">Next update in: 2s</p>
+      <div class="dashboard-container p-4">
+        <h1 class="text-center mb-3">GPS Dashboard</h1>
+        <p id="countdown" class="text-center mb-4 text-muted">Next update in: 2s</p>
 
         <!-- MPU Graphs -->
-        <div class="row mb-4">
-          <div class="col-md-6">
-            <h5 class="text-center">Accelerometer (m/s²)</h5>
-            <canvas id="accelChart"></canvas>
+        <div class="row g-4 mb-4">
+          <div class="col-md-6 col-12">
+            <div class="chart-card">
+              <h5 class="text-center text-muted">Accelerometer (m/s²)</h5>
+              <canvas id="accelChart"></canvas>
+            </div>
           </div>
-          <div class="col-md-6">
-            <h5 class="text-center">Gyroscope (rad/s)</h5>
-            <canvas id="gyroChart"></canvas>
+          <div class="col-md-6 col-12">
+            <div class="chart-card">
+              <h5 class="text-center text-muted">Gyroscope (rad/s)</h5>
+              <canvas id="gyroChart"></canvas>
+            </div>
           </div>
         </div>
 
         <!-- GPS Info -->
-        <div class="row text-center mb-4">
-          <div class="col-md-4"><strong>Latitude:</strong> <span id="gps-lat">--</span></div>
-          <div class="col-md-4"><strong>Longitude:</strong> <span id="gps-lon">--</span></div>
-          <div class="col-md-4"><strong>Status:</strong> <span id="gps-status">--</span></div>
-        </div>
-        <div class="row text-center mb-4">
-          <div class="col-md-4"><strong>Speed (knots):</strong> <span id="gps-speed-knots">--</span></div>
-          <div class="col-md-4"><strong>Speed (km/h):</strong> <span id="gps-speed-kmh">--</span></div>
-          <div class="col-md-4"><strong>Course:</strong> <span id="gps-course">--</span></div>
-        </div>
-        <div class="text-center mb-4">
-          <strong>Timestamp:</strong> <span id="gps-time">--</span>
+        <div class="gps-info">
+          <div class="row text-center mb-4">
+            <div class="col-md-4 col-12"><strong>Latitude:</strong> <span id="gps-lat">--</span></div>
+            <div class="col-md-4 col-12"><strong>Longitude:</strong> <span id="gps-lon">--</span></div>
+            <div class="col-md-4 col-12"><strong>Status:</strong> <span id="gps-status">--</span></div>
+          </div>
+          <div class="row text-center mb-4">
+            <div class="col-md-4 col-12"><strong>Speed (knots):</strong> <span id="gps-speed-knots">--</span></div>
+            <div class="col-md-4 col-12"><strong>Speed (km/h):</strong> <span id="gps-speed-kmh">--</span></div>
+            <div class="col-md-4 col-12"><strong>Course:</strong> <span id="gps-course">--</span></div>
+          </div>
+          <div class="text-center mb-4">
+            <strong>Timestamp:</strong> <span id="gps-time">--</span>
+          </div>
         </div>
 
         <!-- Toggle Map Button -->
         <div class="text-center mb-3">
-          <button id="toggle-map" class="btn btn-primary">
+          <button id="toggle-map" class="btn btn-primary shadow-sm">
             <i class="bi bi-map"></i> Show Map
           </button>
         </div>
 
         <!-- Google Map -->
-        <div id="map-container">
+        <div id="map-container" style="display:none;">
           <div id="map"></div>
         </div>
       </div>
     </main>
 
     <!-- Footer -->
-    <footer class="text-center py-3 bg-white border-top mt-auto">
+    <footer class="text-center py-3 mt-auto">
       <p class="mb-0">© 2025 Embedded Systems | All Rights Reserved</p>
     </footer>
   </div>
@@ -111,7 +114,19 @@
 
     const chartOptions = {
       responsive: true,
-      animation: false,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 500,
+        easing: 'easeOutQuart'
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#555',
+            font: { weight: '600' }
+          }
+        }
+      },
       scales: {
         x: { display: false },
         y: { beginAtZero: true }
@@ -123,9 +138,9 @@
       data: {
         labels: [],
         datasets: [
-          { label: "X", borderColor: "red", data: [], fill: false },
-          { label: "Y", borderColor: "green", data: [], fill: false },
-          { label: "Z", borderColor: "blue", data: [], fill: false }
+          { label: "X", borderColor: "#c56e12", backgroundColor: "rgba(197,110,18,0.1)", data: [], fill: true },
+          { label: "Y", borderColor: "#16924a", backgroundColor: "rgba(22,146,74,0.1)", data: [], fill: true },
+          { label: "Z", borderColor: "#007bff", backgroundColor: "rgba(0,123,255,0.1)", data: [], fill: true }
         ]
       },
       options: chartOptions
@@ -136,9 +151,9 @@
       data: {
         labels: [],
         datasets: [
-          { label: "X", borderColor: "orange", data: [], fill: false },
-          { label: "Y", borderColor: "purple", data: [], fill: false },
-          { label: "Z", borderColor: "brown", data: [], fill: false }
+          { label: "X", borderColor: "#ff6b6b", backgroundColor: "rgba(255,107,107,0.1)", data: [], fill: true },
+          { label: "Y", borderColor: "#6f42c1", backgroundColor: "rgba(111,66,193,0.1)", data: [], fill: true },
+          { label: "Z", borderColor: "#20c997", backgroundColor: "rgba(32,201,151,0.1)", data: [], fill: true }
         ]
       },
       options: chartOptions
@@ -171,7 +186,6 @@
       }
     }
 
-    // Existing GPS functions remain unchanged...
     async function fetchGPS() {
       try {
         const res = await fetch("/act6/gps");
@@ -239,8 +253,8 @@
       pathPolyline = new google.maps.Polyline({
         path: pathCoords,
         geodesic: true,
-        strokeColor: "#FF0000",
-        strokeOpacity: 1.0,
+        strokeColor: "#c56e12",
+        strokeOpacity: 0.8,
         strokeWeight: 3,
         map: map,
       });
