@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "components/header.html" %}
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+    <div class="container">
+      <a href="{{ url_for('homepage') }}"><img src="{{ url_for('static', filename='images/embeddedico_32.png') }}" alt="Logo" width="32" height="32" class="me-2"></a>
+      <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url_for('homepage') }}">
+        Embedded Systems
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link active" href="{{ url_for('homepage') }}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#activities">Activities</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero mt-5">
+    <div class="container text-center">
+      <h1>Welcome To Embedded Systems</h1>
+      <p>Explore and document all of our activities for the Embedded Systems course in one place.</p>
+    </div>
+  </section>
+
+  <section id="activities" class="py-5">
+    <div class="container">
+      <h2 class="text-center mb-4 fw-bold">Activities</h2>
+      <div class="row g-4" id="activity-cards"></div>
+    </div>
+  </section>
+
+  <section id="about" class="py-5">
+    <div class="container">
+      <h2 class="text-center fw-bold mb-4">About Embedded Systems</h2>
+      <p class="text-about mx-auto" style="max-width: 700px;">
+        Embedded systems are computer systems with a dedicated function within a larger mechanical or electrical system.
+        They are essential in modern technology, ranging from consumer electronics to industrial applications. In this
+        course, we explore various activities and projects to understand how embedded systems work in real-world
+        scenarios.
+      </p>
+    </div>
+  </section>
+
+  <footer class="text-center py-3 bg-white border-top">
+    <p class="mb-0">&copy; 2025 Embedded Systems | All Rights Reserved</p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+
+  <script>
+    $(document).ready(function () {
+      let container = $("#activity-cards");
+      const activeActivity = {{ active_activity|default('null') }};
+
+      for (let i = 1; i <= 17; i++) {
+        let buttons = '';
+        if (i === activeActivity) {
+          buttons = `
+            <a href="/act${i}" class="btn btn-primary btn-sm mt-2 me-1">View</a>
+            <a href="/act${i}/history" class="btn btn-secondary btn-sm mt-2">History</a>
+          `;
+        } else {
+          buttons = `<a href="/act${i}/history" class="btn btn-secondary btn-sm mt-2">History</a>`;
+        }
+
+        container.append(`
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="card activity-card h-100 text-center border-0 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Activity ${i}</h5>
+                ${buttons}
+              </div>
+            </div>
+          </div>
+        `);
+      }
+    });
+  </script>
+
+</body>
+
+</html>

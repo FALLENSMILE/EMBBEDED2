@@ -1,0 +1,127 @@
+
+
+  body {
+    color: #0c0c0c;
+    font-family: "Bricolage Grotesque", sans-serif;
+}
+h1,
+h5 {
+    color: whitesmoke;
+}
+h2{
+    color: #c56e12;
+}
+
+/*Navbar*/
+.nav-link {
+    color: #c56e12 !important;
+}
+
+.nav-link:hover {
+    color: #794207 !important;
+}
+
+.navbar {
+    box-shadow: 0 4px 10px rgba(46, 44, 44, 0.442);
+}
+
+.navbar img:hover{
+    content: url('{{ url_for("static", filename="images/iconhover_32.png") }}');
+}
+.navbar a{
+    color: #c56e12;
+}
+.navbar a:hover{
+    color: #6f3c05;
+}
+
+.text-primary {
+    color: #c56e12;
+}
+
+
+/*Hero*/
+.hero {
+    background: linear-gradient(135deg, #e7b177, #c56e12);
+    color: white;
+    text-align: center;
+    padding: 80px 20px;
+    border-radius: 0 0 40px 40px;
+}
+
+.hero h1 {
+    font-weight: 700;
+    animation: fadeInDown 1s ease;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    animation: fadeInUp 1.2s ease;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/*Cards*/
+
+#activities h2{
+    color: #c56e12;
+}
+.activity-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+}
+
+.activity-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+.card-title{
+    color: #c56e12;
+}
+.btn-primary{
+    background-color: #c56e12;
+    border: none;
+}
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus  {
+    background-color: #894a08 !important;
+    
+}
+
+/*About*/
+#about {
+    background-color: #e7b177;
+    /* Light blue background */
+}
+
+.py-5 p,h2{
+    color: whitesmoke;
+}
+
+/*For Footer*/
+.footer,
+footer p {
+    color: #c56e12;
+    /* Lighter gray for footer */
+}

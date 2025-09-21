@@ -1,0 +1,116 @@
+:root {
+  --main-orange: #c56e12;
+  --deep-orange: #794207;
+  --light-beige: #fff4e1;
+  --accent-green: #16924a;
+  --text-dark: #2c2c2c;
+}
+
+/* Font & Body */
+body {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+  margin: 0;
+  padding-top: 70px; /* Adjust for fixed navbar */
+}
+
+/* Navbar */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--main-orange) !important;
+}
+
+.navbar-brand:hover {
+  color: var(--deep-orange) !important;
+}
+
+.nav-link {
+  color: var(--main-orange) !important;
+}
+
+.nav-link:hover {
+  color: var(--deep-orange) !important;
+}
+
+/* Dashboard container */
+.dashboard-container {
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  margin-top: 2rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-container h1 {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+#countdown {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+/* Readings */
+.reading {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Buzzer status */
+#buzzer-status {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.buzzer-active {
+  color: red;
+  font-weight: bold;
+}
+
+.buzzer-inactive {
+  color: gray;
+}
+
+/* Chart styling (if act3_history.html includes charts) */
+canvas {
+  width: 100% !important;
+  height: 300px !important;
+  max-height: 300px;
+}
+
+/* Card titles */
+h5 {
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Footer */
+footer {
+  font-size: 0.9rem;
+  background-color: #ffffff;
+  color: #777;
+  border-top: 1px solid #ddd;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .reading {
+    font-size: 1rem;
+  }
+
+  #buzzer-status {
+    font-size: 1rem;
+  }
+
+  canvas {
+    height: 250px !important;
+  }
+}

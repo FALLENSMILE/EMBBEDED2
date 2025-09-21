@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap" rel="stylesheet" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/act4.css') }}" />
+  <title>Activity 4 History - Embedded Systems</title>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+    <div class="container">
+      <a href="{{ url_for('homepage') }}">
+        <img src="{{ url_for('static', filename='images/embeddedico_32.png') }}" alt="Logo" width="32" height="32" class="me-2">
+      </a>
+      <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url_for('homepage') }}">Embedded Systems</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('homepage') }}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('act4_page') }}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link active" href="{{ url_for('act4_history_page') }}">History</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="container mt-5 pt-5">
+    <h1>Sensor History</h1>
+    <p>Last 100 readings of Vibration and Gas Sensor</p>
+
+    <!-- Vibration Chart -->
+    <div class="mt-4">
+      <h4>Vibration Sensor History</h4>
+      <canvas id="vibrationHistoryChart"></canvas>
+    </div>
+
+    <!-- Gas Chart -->
+    <div class="mt-5">
+      <h4>Gas Sensor (MQ-2) History</h4>
+      <canvas id="gasHistoryChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-3 bg-white border-top">
+    <p class="mb-0">&copy; 2025 Embedded Systems | All Rights Reserved</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    // Vibration Chart
+    const vibCtx = document.getElementById('vibrationHistoryChart').getContext('2d');
+    const vibrationChart = new Chart(vibCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Vibration Detected',
+          data: [],
+          borderColor: 'orange',
+          backgroundColor: 'rgba(255,165,0,0.2)',
+          fill: true,
+          tension: 0.3,
+          stepped: true,
+          pointBackgroundColor: []
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Vibration Sensor Historical Data' }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 1,
+            ticks: {
+              stepSize: 1,
+              callback: value => value === 1 ? 'Detected' : 'None'
+            },
+            title: { display: true, text: 'Vibration' }
+          },
+          x: { title: { display: true, text: 'Timestamp' } }
+        }
+      }
+    });
+
+    // Gas Sensor Chart
+    const gasCtx = document.getElementById('gasHistoryChart').getContext('2d');
+    const gasChart = new Chart(gasCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'MQ-2 Gas Sensor Value',
+          data: [],
+          borderColor: 'green',
+          backgroundColor: 'rgba(0,128,0,0.2)',
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: 'green'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Gas Sensor Historical Data' }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Gas Sensor Value' }
+          },
+          x: { title: { display: true, text: 'Timestamp' } }
+        }
+      }
+    });
+
+    // Fetch and update both charts
+    async function fetchHistory() {
+      try {
+        const res = await fetch('/act4/history/data');
+        const d = await res.json();
+
+        // --- Vibration ---
+        const vibTimestamps = d.vibration.timestamps;
+        const vibValues = d.vibration.values;
+        vibrationChart.data.labels = vibTimestamps;
+        vibrationChart.data.datasets[0].data = vibValues;
+        vibrationChart.data.datasets[0].pointBackgroundColor = vibValues.map(v => v === 1 ? 'red' : 'orange');
+        vibrationChart.update();
+
+        // --- Gas ---
+        const gasTimestamps = d.mq2.timestamps;
+        const gasValues = d.mq2.values;
+        gasChart.data.labels = gasTimestamps;
+        gasChart.data.datasets[0].data = gasValues;
+        gasChart.update();
+      } catch (err) {
+        console.warn('Failed to fetch sensor history data:', err);
+      }
+    }
+
+    fetchHistory();
+    setInterval(fetchHistory, 5000);  // update every 5s
+  </script>
+</body>
+</html>

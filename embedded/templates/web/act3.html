@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Activity 3 - Temp & Humidity Monitoring</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/act3.css') }}" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="page-wrapper d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+      <div class="container">
+        <a href="{{ url_for('homepage') }}">
+          <img src="{{ url_for('static', filename='images/embeddedico_32.png') }}" width="32" height="32" alt="Logo" />
+        </a>
+        <a class="navbar-brand fw-bold" href="{{ url_for('homepage') }}">Embedded Systems</a>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="container pt-5 my-5">
+      <div class="p-4 shadow-sm rounded bg-white text-center">
+        <h2 class="mb-4" style="color: var(--main-orange);">Temperature & Humidity Dashboard</h2>
+        <p id="countdown" class="mb-4">Next update in: 2s</p>
+
+        <!-- Buzzer -->
+        <div id="buzzer-status" class="buzzer-inactive mb-4">
+          <i id="buzzer-icon" class="bi bi-bell-slash-fill"></i> Buzzer: OFF
+        </div>
+
+        <!-- Live Readings -->
+        <div class="row g-4 justify-content-center">
+          <div class="col-md-4">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title text-muted">Temperature</h5>
+                <p id="temperature" class="display-6 fw-bold text-danger">-- °C</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title text-muted">Humidity</h5>
+                <p id="humidity" class="display-6 fw-bold text-primary">-- %</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mt-5 g-4 justify-content-center">
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title text-center text-danger">Live Temperature (°C)</h5>
+                <canvas id="tempChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title text-center text-primary">Live Humidity (%)</h5>
+                <canvas id="humChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- PIR Sensor Activity Chart -->
+          <div class="col-md-12 mt-4">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title text-center text-warning">PIR Sensor Activity (Motion Detected)</h5>
+                <canvas id="pirChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a href="{{ url_for('act3_history_page') }}" class="btn btn-outline-secondary mt-4">
+          View History
+        </a>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 bg-white border-top mt-auto">
+      <p class="mb-0">© 2025 Embedded Systems | All Rights Reserved</p>
+    </footer>
+  </div>
+
+  <!-- JS Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const countdownEl = document.getElementById("countdown");
+    const tempEl = document.getElementById("temperature");
+    const humEl = document.getElementById("humidity");
+    const buzzerStatusEl = document.getElementById("buzzer-status");
+
+    // Chart related
+    const maxPoints = 20;
+
+    // Temperature Chart Setup
+    const tempCtx = document.getElementById("tempChart").getContext("2d");
+    const tempLabels = [];
+    const tempDataPoints = [];
+
+    const tempChart = new Chart(tempCtx, {
+      type: "line",
+      data: {
+        labels: tempLabels,
+        datasets: [{
+          label: "Temperature (°C)",
+          data: tempDataPoints,
+          borderColor: "rgba(220, 53, 69, 1)",
+          backgroundColor: "rgba(220, 53, 69, 0.2)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            title: { display: true, text: "Time", color: "#666", font: { weight: "bold" } },
+            ticks: { color: "#888" },
+            grid: { display: false },
+          },
+          y: {
+            min: 0,
+            max: 50,
+            title: { display: true, text: "°C", color: "#666", font: { weight: "bold" } },
+            ticks: { color: "#888", stepSize: 5 },
+            grid: { color: "rgba(0,0,0,0.05)" },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(0,0,0,0.7)",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            padding: 8,
+          },
+        },
+      },
+    });
+
+    // Humidity Chart Setup
+    const humCtx = document.getElementById("humChart").getContext("2d");
+    const humLabels = [];
+    const humDataPoints = [];
+
+    const humChart = new Chart(humCtx, {
+      type: "line",
+      data: {
+        labels: humLabels,
+        datasets: [{
+          label: "Humidity (%)",
+          data: humDataPoints,
+          borderColor: "rgba(13, 110, 253, 1)",
+          backgroundColor: "rgba(13, 110, 253, 0.2)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            title: { display: true, text: "Time", color: "#666", font: { weight: "bold" } },
+            ticks: { color: "#888" },
+            grid: { display: false },
+          },
+          y: {
+            min: 0,
+            max: 100,
+            title: { display: true, text: "%", color: "#666", font: { weight: "bold" } },
+            ticks: { color: "#888", stepSize: 10 },
+            grid: { color: "rgba(0,0,0,0.05)" },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(0,0,0,0.7)",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            padding: 8,
+          },
+        },
+      },
+    });
+
+    // PIR Sensor Chart Setup
+    const pirCtx = document.getElementById("pirChart").getContext("2d");
+    const pirLabels = [];
+    const pirDataPoints = [];
+
+    const pirChart = new Chart(pirCtx, {
+      type: "bar",
+      data: {
+        labels: pirLabels,
+        datasets: [{
+          label: "PIR Active (1=Motion, 0=No Motion)",
+          data: pirDataPoints,
+          backgroundColor: "rgba(255, 193, 7, 0.7)", // Bootstrap warning yellow
+          borderColor: "rgba(255, 193, 7, 1)",
+          borderWidth: 1,
+          barPercentage: 0.6,
+          categoryPercentage: 0.7,
+        }],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            title: { display: true, text: "Time", color: "#666", font: { weight: "bold" } },
+            ticks: { color: "#888" },
+            grid: { display: false },
+          },
+          y: {
+            min: 0,
+            max: 1,
+            ticks: {
+              color: "#888",
+              stepSize: 1,
+              callback: val => (val === 1 ? "Motion" : "No Motion"),
+            },
+            grid: { color: "rgba(0,0,0,0.05)" },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(0,0,0,0.7)",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            padding: 8,
+            callbacks: {
+              label: context => context.parsed.y === 1 ? "Motion Detected" : "No Motion",
+            }
+          },
+        },
+      },
+    });
+
+    let countdown = 2;
+    setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        countdown = 2;
+      }
+      countdownEl.textContent = `Next update in: ${countdown}s`;
+    }, 1000);
+
+    async function fetchReading() {
+      try {
+        const res = await fetch("/act3/readings");
+        const data = await res.json();
+
+        const now = new Date().toLocaleTimeString();
+
+        if (data.temperature !== null && data.humidity !== null) {
+          // Update numeric displays
+          tempEl.textContent = `${data.temperature} °C`;
+          humEl.textContent = `${data.humidity} %`;
+
+          // Update buzzer status
+          if (data.temperature >= 38) {
+            buzzerStatusEl.className = "buzzer-active";
+            buzzerStatusEl.innerHTML = '<i class="bi bi-bell-fill"></i> Buzzer: ON';
+          } else {
+            buzzerStatusEl.className = "buzzer-inactive";
+            buzzerStatusEl.innerHTML = '<i class="bi bi-bell-slash-fill"></i> Buzzer: OFF';
+          }
+
+          // Update temperature chart
+          tempLabels.push(now);
+          tempDataPoints.push(data.temperature);
+          if (tempLabels.length > maxPoints) {
+            tempLabels.shift();
+            tempDataPoints.shift();
+          }
+          tempChart.update();
+
+          // Update humidity chart
+          humLabels.push(now);
+          humDataPoints.push(data.humidity);
+          if (humLabels.length > maxPoints) {
+            humLabels.shift();
+            humDataPoints.shift();
+          }
+          humChart.update();
+
+          // Update PIR chart if data present
+          if ("pir_active" in data) {
+            pirLabels.push(now);
+            pirDataPoints.push(data.pir_active ? 1 : 0);
+            if (pirLabels.length > maxPoints) {
+              pirLabels.shift();
+              pirDataPoints.shift();
+            }
+            pirChart.update();
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch readings", err);
+      }
+    }
+    // Initial fetch and repeated every 2 seconds
+    fetchReading();
+    setInterval(fetchReading, 2000);
+  </script>
+</body>
+</html>

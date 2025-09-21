@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Activity 3 - Temp, Humidity & PIR History</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/act3.css') }}" />
+</head>
+<body>
+  <div class="page-wrapper d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+      <div class="container">
+        <a href="{{ url_for('homepage') }}">
+          <img src="{{ url_for('static', filename='images/embeddedico_32.png') }}" width="32" height="32" alt="Logo" />
+        </a>
+        <a class="navbar-brand fw-bold" href="{{ url_for('homepage') }}">Embedded Systems</a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container pt-5 my-5">
+      <div class="dashboard-container shadow-sm p-4 rounded bg-white">
+        <h1 class="text-center mb-4" style="color: var(--main-orange);">Temperature, Humidity & PIR History</h1>
+        
+        <div class="mb-4">
+          <canvas id="temperatureChart"></canvas>
+        </div>
+
+        <div class="mb-4">
+          <canvas id="humidityChart"></canvas>
+        </div>
+
+        <div class="mb-4">
+          <canvas id="pirChart"></canvas>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 bg-white border-top mt-auto">
+      <p class="mb-0">© 2025 Embedded Systems | All Rights Reserved</p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    async function loadHistoryData() {
+      try {
+        const res = await fetch("/act3/history/data");
+        const data = await res.json();
+
+        const timeLabels = data.timestamps;
+        const tempData = data.temperature;
+        const humData = data.humidity;
+        const pirData = data.pir_active;  // expect array of 0 or 1
+
+        const tempCtx = document.getElementById("temperatureChart").getContext("2d");
+        const humidityCtx = document.getElementById("humidityChart").getContext("2d");
+        const pirCtx = document.getElementById("pirChart").getContext("2d");
+
+        // Temperature Chart
+        new Chart(tempCtx, {
+          type: 'line',
+          data: {
+            labels: timeLabels,
+            datasets: [{
+              label: 'Temperature (°C)',
+              data: tempData,
+              borderColor: 'var(--main-orange)',
+              backgroundColor: 'rgba(197, 110, 18, 0.2)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 4,
+              pointBackgroundColor: 'var(--main-orange)'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'var(--main-orange)',
+                borderWidth: 1,
+                padding: 10
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#666' },
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                title: {
+                  display: true,
+                  text: 'Time',
+                  color: '#666',
+                  font: { weight: 'bold' }
+                }
+              },
+              y: {
+                ticks: { color: '#666' },
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                title: {
+                  display: true,
+                  text: 'Temperature (°C)',
+                  color: '#666',
+                  font: { weight: 'bold' }
+                }
+              }
+            }
+          }
+        });
+
+        // Humidity Chart
+        new Chart(humidityCtx, {
+          type: 'line',
+          data: {
+            labels: timeLabels,
+            datasets: [{
+              label: 'Humidity (%)',
+              data: humData,
+              borderColor: 'var(--accent-green)',
+              backgroundColor: 'rgba(22, 146, 74, 0.2)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 4,
+              pointBackgroundColor: 'var(--accent-green)'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'var(--accent-green)',
+                borderWidth: 1,
+                padding: 10
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#666' },
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                title: {
+                  display: true,
+                  text: 'Time',
+                  color: '#666',
+                  font: { weight: 'bold' }
+                }
+              },
+              y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: { color: '#666' },
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                title: {
+                  display: true,
+                  text: 'Humidity (%)',
+                  color: '#666',
+                  font: { weight: 'bold' }
+                }
+              }
+            }
+          }
+        });
+
+        // PIR Chart (Bar)
+        new Chart(pirCtx, {
+          type: 'bar',
+          data: {
+            labels: timeLabels,
+            datasets: [{
+              label: 'PIR Motion Detected',
+              data: pirData,
+              backgroundColor: 'rgba(255, 193, 7, 0.7)',
+              borderColor: 'rgba(255, 193, 7, 1)',
+              borderWidth: 1,
+              barPercentage: 0.6,
+              categoryPercentage: 0.7,
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              x: {
+                ticks: { color: '#666' },
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                title: {
+                  display: true,
+                  text: 'Time',
+                  color: '#666',
+                  font: { weight: 'bold' }
+                }
+              },
+              y: {
+                min: 0,
+                max: 1,
+                ticks: {
+                  color: '#666',
+                  stepSize: 1,
+                  callback: val => (val === 1 ? 'Motion' : 'No Motion'),
+                },
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                title: {
+                  display: true,
+                  text: 'Motion Status',
+                  color: '#666',
+                  font: { weight: 'bold' }
+                }
+              }
+            },
+            plugins: {
+              legend: { display: true },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'rgba(255, 193, 7, 1)',
+                borderWidth: 1,
+                padding: 10,
+                callbacks: {
+                  label: context => context.parsed.y === 1 ? "Motion Detected" : "No Motion"
+                }
+              }
+            }
+          }
+        });
+
+      } catch (err) {
+        console.error("Error loading history data", err);
+      }
+    }
+
+    loadHistoryData();
+  </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+/* Navbar */
+.nav-link {
+    color: #c56e12 !important;
+}
+
+.nav-link:hover {
+    color: #794207 !important;
+}
+
+.navbar {
+    box-shadow: 0 4px 10px rgba(46, 44, 44, 0.442);
+}
+
+.navbar img:hover {
+    content: url(/static/images/iconhover_32.png);
+}
+
+.navbar a {
+    color: #c56e12 !important;
+}
+
+.navbar a:hover {
+    color: #6f3c05 !important;
+}
+
+.text-primary {
+    color: #c56e12 !important;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    margin-top: 100px;
+    padding: 40px 20px;
+    background-color: #ea963de4;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    color: #ecf0f1 !important;
+    text-align: center;
+}
+
+.dashboard-container h1 {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+/* Readings */
+.reading {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.reading span {
+    display: block;
+    margin: 8px 0;
+}
+
+/* Countdown */
+#countdown {
+    font-size: 1rem;
+    color: #16924a !important;
+    margin-bottom: 15px;
+}
+
+/* ? Buzzer Styles (from act1.css) */
+.buzzer-status {
+    margin-bottom: 25px;
+    font-size: 1.2rem;
+}
+
+.buzzer-active {
+    animation: pulse 1s infinite;
+    color: red !important;
+    font-weight: bold;
+}
+
+.buzzer-inactive {
+    color: gray !important;
+    font-weight: normal;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.2; }
+    100% { opacity: 1; }
+}
+
+/* Chart Styling */
+canvas {
+    width: 100% !important;
+    height: 350px !important;
+    margin-top: 20px;
+    background: #ffffff0e;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    padding: 10px;
+}
+
+/* Buttons */
+button {
+    border: 1px solid #c56e12 !important;
+    background: none;
+    color: #ecf0f1 !important;
+    margin-top: 15px;
+    padding: 8px 18px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #c56e12 !important;
+    transform: scale(1.05);
+}
+
+/* General Fonts */
+* {
+    font-family: "Poppins", sans-serif;
+    color: #ecf0f1 !important;
+}
+
+/* Layout for dual sensors + chart */
+.dashboard-container .d-flex {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+}
+
+/* Footer */
+.footer,
+footer p {
+    color: #c56e12 !important;
+}
