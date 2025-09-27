@@ -1,0 +1,112 @@
+:root {
+    --main-orange: #c56e12;
+    --deep-orange: #794207;
+    --light-beige: #fff4e1;
+    --accent-green: #16924a;
+    --text-dark: #2c2c2c;
+    --light-gray: #f8f9fa;
+  }
+
+  /* Font & Body */
+body {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    margin: 0;
+    padding-top: 70px; /* Adjust for fixed navbar */
+  }
+  
+  /* Navbar */
+  .navbar-brand {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--main-orange) !important;
+  }
+  
+  .navbar-brand:hover {
+    color: var(--deep-orange) !important;
+  }
+  
+  .nav-link {
+    color: var(--main-orange) !important;
+  }
+  
+  .nav-link:hover {
+    color: var(--deep-orange) !important;
+  }
+  
+  /* Global font */
+  body {
+    font-family: "Bricolage Grotesque", Arial, sans-serif;
+    background: #fff;
+    color: var(--text-dark);
+  }
+  
+  /* Headings */
+  h1, h5 {
+    font-weight: 700;
+    color: var(--deep-orange);
+  }
+  
+  /* Card styling */
+  .card {
+    border: none;
+    border-radius: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Buttons */
+  .btn-main {
+    background: var(--main-orange);
+    color: #fff;
+    border: none;
+    transition: background 0.2s ease;
+  }
+  
+  .btn-main:hover {
+    background: var(--deep-orange);
+    color: #fff;
+  }
+  
+  .btn-green {
+    background: var(--accent-green);
+    color: #fff;
+    border: none;
+    transition: background 0.2s ease;
+  }
+  
+  .btn-green:hover {
+    background: #0d7037;
+    color: #fff;
+  }
+  
+  /* Bot messages box */
+  #botMessages {
+    background: var(--light-gray);
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+  }
+  
+  /* Saved audio list */
+  #audioList .list-group-item {
+    border: none;
+    border-bottom: 1px solid #eee;
+    padding: 0.75rem 1rem;
+  }
+  
+  #audioList .list-group-item:last-child {
+    border-bottom: none;
+  }
+
+  /* Footer */
+footer {
+    font-size: 0.9rem;
+    background-color: #ffffff;
+    color: #777;
+    border-top: 1px solid #ddd;
+  }
