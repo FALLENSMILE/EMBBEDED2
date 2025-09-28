@@ -17,99 +17,80 @@
 
   <title>Activity 8 - Text to Speech Test</title>
 
-   <!-- Custom CSS -->
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/act8.css') }}" />
-
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/act8.css') }}" />
 </head>
 
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
-    <div class="container">
-      <a href="/index.html" class="d-flex align-items-center text-decoration-none">
-        <img src="/images/embeddedico_32.png" alt="Logo" width="32" height="32" class="me-2">
-        <span class="navbar-brand fw-bold">Embedded Systems</span>
-      </a>
-      <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link active fw-semibold" href="/index.html">Home</a></li>
-        </ul>
+  <!-- Main Content -->
+  <main class="container" style="margin-top: 100px; background:#fff;">
+    <div class="mb-5 text-center">
+      <h1 class="fw-bold" style="color:var(--deep-orange);">Activity 8</h1>
+      <p class="text-muted">Text to Speech Test</p>
+    </div>
+
+    <!-- Input form -->
+    <div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
+      <h5 class="fw-bold mb-3" style="color:var(--main-orange);">Text to Speech</h5>
+      
+      <label for="speechInput" class="form-label">Enter text to speak:</label>
+      <div class="input-group mb-3">
+        <input type="text" id="speechInput" class="form-control" placeholder="Type something...">
+        <button class="btn btn-main" onclick="sendSpeech()">Speak</button>
+      </div>
+
+      <!-- Language Selector -->
+      <label for="langSelect" class="form-label">Select Language:</label>
+      <select id="langSelect" class="form-select mb-4">
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="tl">Filipino (Tagalog)</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="it">Italian</option>
+        <option value="ja">Japanese</option>
+      </select>
+
+      <!-- Save & Download -->
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-green" onclick="saveSpeech()">Save as Audio</button>
+        <a id="downloadLink" class="btn btn-outline-secondary disabled" download>Download Audio</a>
       </div>
     </div>
-  </nav>
 
- <!-- Main Content -->
- <main class="container" style="margin-top: 100px; background:#fff;">
-  <div class="mb-5 text-center">
-    <h1 class="fw-bold" style="color:var(--deep-orange);">Activity 8</h1>
-    <p class="text-muted">Text to Speech Test</p>
+    <!-- Saved Audio List -->
+    <div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
+      <h5 class="fw-bold mb-3" style="color:var(--main-orange);">Saved Audio Files</h5>
+      <ul id="audioList" class="list-group list-group-flush"></ul>
+      <p id="lastUpdated" class="text-muted small mt-3"></p>
+    </div>
+  </main>
+
+  <!-- Floating Chat Head -->
+  <div id="chatHead" onclick="toggleChat(event)">
+    <img src="{{ url_for('static', filename='images/Bot_32.png') }}" alt="Mini Me" />
   </div>
 
-  <!-- Input form -->
-  <div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
-    <h5 class="fw-bold mb-3" style="color:var(--main-orange);">Text to Speech</h5>
-    
-    <label for="speechInput" class="form-label">Enter text to speak:</label>
-    <div class="input-group mb-3">
-      <input type="text" id="speechInput" class="form-control" placeholder="Type something...">
-      <button class="btn" style="background:var(--main-orange);color:#fff;" onclick="sendSpeech()">Speak</button>
+  <!-- Floating Chat Box -->
+  <div id="chatBox" class="shadow-lg">
+    <div class="chat-header d-flex justify-content-between align-items-center px-3 py-2">
+      <span class="fw-bold text-white">Talking Mini Bot</span>
+      <button class="btn-close btn-close-white" onclick="toggleChat()"></button>
     </div>
 
-    <!-- Language Selector -->
-    <label for="langSelect" class="form-label">Select Language:</label>
-    <select id="langSelect" class="form-select mb-4">
-      <option value="en">English</option>
-      <option value="es">Spanish</option>
-      <option value="tl">Filipino (Tagalog)</option>
-      <option value="fr">French</option>
-      <option value="de">German</option>
-      <option value="it">Italian</option>
-      <option value="ja">Japanese</option>
-    </select>
+    <div id="botMessages" class="p-3"></div>
 
-    <!-- Save & Download -->
-    <div class="d-flex gap-2 flex-wrap">
-      <button class="btn" style="background:var(--accent-green);color:#fff;" onclick="saveSpeech()">Save as Audio</button>
-      <a id="downloadLink" class="btn btn-outline-secondary disabled" download>Download Audio</a>
+    <div class="chat-input d-flex p-2 border-top">
+      <input type="text" id="botInput" class="form-control me-2" placeholder="Type to chat...">
+      <button class="btn btn-main" onclick="talkBot()">Send</button>
     </div>
   </div>
-
-  <!-- Saved Audio List -->
-  <div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
-    <h5 class="fw-bold mb-3" style="color:var(--main-orange);">Saved Audio Files</h5>
-    <ul id="audioList" class="list-group list-group-flush"></ul>
-    <p id="lastUpdated" class="text-muted small mt-3"></p>
-  </div>
-
-  <!-- Talking Mini Bot -->
-  <div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
-    <h5 class="fw-bold mb-3" style="color:var(--main-orange);">Talking Mini Bot</h5>
-    
-    <div id="botMessages" 
-         class="border rounded-3 p-3 mb-3 bg-light" 
-         style="height:220px; overflow-y:auto;">
-      <!-- Bot messages appear here -->
-    </div>
-    
-    <div class="input-group">
-      <input type="text" id="botInput" class="form-control" placeholder="Type to chat...">
-      <button class="btn" style="background:var(--main-orange);color:#fff;" onclick="talkBot()">Send</button>
-    </div>
-  </div>
-</main>
-
-  <!-- Footer -->
-  <footer class="text-center py-3 mt-5">
-    <p class="mb-0">© 2025 Embedded Systems | All Rights Reserved</p>
-  </footer>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Custom JS (same functionality, untouched) -->
+
+  <!-- Custom JS -->
   <script>
     function getLang() {
       return document.getElementById("langSelect").value;
@@ -183,7 +164,6 @@
 
       const messagesEl = document.getElementById("botMessages");
 
-      // Add user message
       const userMsgEl = document.createElement("div");
       userMsgEl.className = "text-end mb-2";
       userMsgEl.innerHTML = `<span class="badge bg-primary">${msg}</span>`;
@@ -192,7 +172,6 @@
 
       inputEl.value = "";
 
-      // Bot reply
       const botReply = generateBotReply(msg);
 
       const botMsgEl = document.createElement("div");
@@ -201,7 +180,6 @@
       messagesEl.appendChild(botMsgEl);
       messagesEl.scrollTop = messagesEl.scrollHeight;
 
-      // Speak bot reply
       const lang = getLang();
       fetch(`/act8/speak?text=${encodeURIComponent(botReply)}&lang=${lang}`)
         .then(res => console.log("Bot speaking..."))
@@ -216,6 +194,54 @@
       return "You said: " + userMsg;
     }
 
+    // --- Chat toggle ---
+    function toggleChat(event) {
+      // Prevent click when dragging
+      if (event && event.detail === 0) return;
+
+      const chatBox = document.getElementById("chatBox");
+      chatBox.style.display = (chatBox.style.display === "flex") ? "none" : "flex";
+    }
+
+    // --- Make chathead draggable ---
+    const chatHead = document.getElementById("chatHead");
+    let isDragging = false, offsetX, offsetY;
+
+    chatHead.addEventListener("mousedown", startDrag);
+    chatHead.addEventListener("touchstart", startDrag);
+
+    function startDrag(e) {
+      isDragging = true;
+      const rect = chatHead.getBoundingClientRect();
+      offsetX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      offsetY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+
+      document.addEventListener("mousemove", drag);
+      document.addEventListener("mouseup", stopDrag);
+      document.addEventListener("touchmove", drag);
+      document.addEventListener("touchend", stopDrag);
+    }
+
+    function drag(e) {
+      if (!isDragging) return;
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - offsetX;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - offsetY;
+
+      chatHead.style.left = x + "px";
+      chatHead.style.top = y + "px";
+      chatHead.style.right = "auto";
+      chatHead.style.bottom = "auto";
+      chatHead.style.position = "fixed";
+    }
+
+    function stopDrag() {
+      isDragging = false;
+      document.removeEventListener("mousemove", drag);
+      document.removeEventListener("mouseup", stopDrag);
+      document.removeEventListener("touchmove", drag);
+      document.removeEventListener("touchend", stopDrag);
+    }
+
     // Initialize
     window.onload = () => {
       loadAudioList();
@@ -223,5 +249,4 @@
     };
   </script>
 </body>
-
 </html>
