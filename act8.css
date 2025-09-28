@@ -16,6 +16,26 @@ body {
   padding-top: 70px;
 }
 
+/* Navbar */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--main-orange) !important;
+}
+
+.navbar-brand:hover {
+  color: var(--deep-orange) !important;
+}
+
+.nav-link {
+  color: var(--main-orange) !important;
+}
+
+.nav-link:hover {
+  color: var(--deep-orange) !important;
+}
+
+
 /* Headings */
 h1, h5 {
   font-weight: 700;
