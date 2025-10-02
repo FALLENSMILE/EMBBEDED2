@@ -1,0 +1,65 @@
+:root {
+    --main-orange: #ff7a18;
+    --deep-orange: #d35400;
+    --soft-gray: #f9fafc;
+    --text-dark: #2c2c2c;
+    --green: #16924a;
+    --blue: #2980b9;
+    --red: #c0392b;
+  }
+  
+  body {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    background: var(--soft-gray);
+    color: var(--text-dark);
+  }
+  
+  /* Title gradient */
+  .text-gradient {
+    background: linear-gradient(90deg, var(--main-orange), var(--deep-orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+  
+  /* Dashboard box */
+  .dashboard-container {
+    border-radius: 1rem;
+    background: #fff;
+  }
+  
+  /* Reading boxes */
+  .reading-box {
+    background: var(--soft-gray);
+    border: 1px solid #eee;
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .reading-box:hover {
+    transform: scale(1.03);
+  }
+  
+  /* Cards */
+  .custom-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .custom-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* Fade-in animation */
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
