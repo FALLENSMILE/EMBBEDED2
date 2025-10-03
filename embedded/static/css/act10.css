@@ -1,0 +1,92 @@
+/* act10.css */
+
+body {
+  font-family: "Bricolage Grotesque", sans-serif;
+  background: #f9fafc;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+/* Navbar */
+.navbar {
+  transition: all 0.3s ease;
+}
+.navbar .nav-link {
+  color: #333;
+  transition: 0.2s;
+}
+.navbar .nav-link:hover {
+  color: #007bff;
+  transform: translateY(-2px);
+}
+.navbar .nav-link.active {
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Dashboard container */
+.dashboard-container {
+  background: #fff;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.6s ease;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #007bff, #00c4ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Webcam feed */
+.dashboard-container img {
+  border-radius: 15px;
+  border: 3px solid #f0f0f0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.dashboard-container img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* Face log */
+#face-log {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 10px;
+}
+#face-log .list-group-item {
+  font-size: 0.9rem;
+  padding: 10px;
+  transition: background 0.2s;
+}
+#face-log .list-group-item:hover {
+  background: #f8f9fa;
+}
+
+/* Footer */
+footer {
+  font-size: 0.85rem;
+  color: #666;
+  background: #fff;
+  border-top: 1px solid #eaeaea;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease both;
+}
