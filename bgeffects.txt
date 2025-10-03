@@ -1,0 +1,71 @@
+    <div class="bg-particles">
+        <div class="particle"><img src="/assets/robot_32.png" alt="robot"></div>
+        <div class="particle"><img src="/assets/sensor_32.png" alt="sensor"></div>
+        <div class="particle"><img src="/assets/chip_32.png" alt="chip"></div>
+        <div class="particle"><img src="/assets/network_32.png" alt="iot"></div>
+        <div class="particle"><img src="/assets/signal_32.png" alt="signal"></div>
+        <!-- Repeat or add more -->
+    </div>
+
+
+
+/** FOR THE BUBBLES **/
+
+document.querySelectorAll('.particle').forEach(p => {
+    const randomLeft = Math.random() * 100;   // anywhere 0–100%
+    const randomDelay = Math.random() * 10;   // 0–10s delay
+    const randomDuration = 12 + Math.random() * 10; // 12–22s
+    const randomSize = 20 + Math.random() * 40; // 20–60px size
+
+    p.style.setProperty("left", randomLeft + "%", "important");
+    p.style.animationDelay = randomDelay + "s";
+    p.style.animationDuration = randomDuration + "s";
+    p.querySelector("img").style.width = randomSize + "px";
+});
+
+
+/** FOR THE BUBBLES **/
+
+.bg-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.particle {
+    position: absolute;
+    top: 100vh;
+    opacity: 0.6;
+    animation: float infinite linear;
+}
+
+.particle img {
+    width: 40px;
+    height: auto;
+    opacity: 0.8;
+}
+
+/* You can add more like before */
+
+@keyframes float {
+    0% {
+        transform: translateY(100vh) rotate(0deg) scale(1);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.7;
+    }
+    90% {
+        transform: translateY(-50vh) rotate(180deg) scale(1.1);
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(-100vh) rotate(360deg) scale(1);
+        opacity: 0;
+    }
+}
