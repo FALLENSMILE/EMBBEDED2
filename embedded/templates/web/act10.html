@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -17,7 +18,6 @@
     <title>Activity 10 - Embedded Systems</title>
 
     <link rel="stylesheet" href="/css/act10.css">
-
 </head>
 
 <body>
@@ -44,6 +44,30 @@
         </div>
     </nav>
 
+    <!-- Main Content -->
+    <main class="container my-5 pt-5">
+        <div class="text-center">
+            <h2 class="fw-bold mb-4">Activity 10 - Face Recognition</h2>
+            <p class="text-muted">This activity demonstrates real-time face recognition using a USB camera.</p>
+            
+            <!-- Video Feed -->
+            <div class="d-flex justify-content-center mb-4">
+                <img src="{{ url_for('video_feed') }}" alt="Face Recognition Feed" class="img-fluid border rounded shadow">
+            </div>
+
+            <!-- Register Form -->
+            <div class="card p-3 shadow-sm mx-auto" style="max-width:400px;">
+                <h5 class="mb-3">Register Unknown Face</h5>
+                <form id="registerForm">
+                    <div class="input-group mb-3">
+                        <input type="text" id="name" name="name" class="form-control" placeholder="Enter name">
+                        <button class="btn btn-primary" type="submit" disabled>Register</button>
+                    </div>
+                </form>
+                <div id="registerResult" class="text-muted small"></div>
+            </div>
+        </div>
+    </main>
 
     <!-- Footer -->
     <footer class="text-center py-3 bg-white border-top">
@@ -55,6 +79,55 @@
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
 
-</body>
+    <!-- Register Face Script -->
+    <script>
+        const registerBtn = document.querySelector("#registerForm button");
+        const registerResult = document.getElementById("registerResult");
+        const nameInput = document.getElementById("name");
 
+        // Function to check for unknown faces
+        async function checkUnknownFaces() {
+            try {
+                const res = await fetch("/act10/history/data");
+                const data = await res.json();
+
+                // Enable button only if there are unknown faces
+                if (data.unknown_count && data.unknown_count > 0) {
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = "Register";
+                } else {
+                    registerBtn.disabled = true;
+                    registerBtn.textContent = "No Unknown Face";
+                }
+            } catch (err) {
+                console.error(err);
+                registerBtn.disabled = true;
+                registerBtn.textContent = "Error";
+            }
+        }
+
+        // Poll every 1 second
+        setInterval(checkUnknownFaces, 1000);
+
+        // Register face submission
+        document.getElementById("registerForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append("name", nameInput.value);
+
+            let res = await fetch("/act10/register", {
+                method: "POST",
+                body: formData
+            });
+            let data = await res.json();
+            registerResult.textContent = data.message;
+
+            if (data.status === "success") {
+                nameInput.value = "";
+                registerBtn.disabled = true;
+            }
+        });
+    </script>
+
+</body>
 </html>
