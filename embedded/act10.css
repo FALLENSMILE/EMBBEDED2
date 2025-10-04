@@ -1,0 +1,107 @@
+:root {
+  --main-orange: #ff7a18;
+  --deep-orange: #d35400;
+  --soft-gray: #f9fafc;
+  --text-dark: #2c2c2c;
+  --green: #16924a;
+  --blue: #2980b9;
+  --red: #c0392b;
+}
+
+body {
+  font-family: "Bricolage Grotesque", sans-serif;
+  background: var(--soft-gray);
+  color: var(--text-dark);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Full viewport height */
+  margin: 0;
+}
+
+main {
+  flex: 1; /* Pushes footer to the bottom */
+}
+
+/* Gradient Heading */
+.text-gradient {
+  background: linear-gradient(90deg, var(--main-orange), var(--deep-orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  background: #fff;
+  border-radius: 1rem;
+}
+
+/* Mini-Bot Styling */
+.mini-bot {
+  max-width: 600px;
+}
+
+/* Bot Eyes */
+.bot-eyes {
+  gap: 1rem;
+}
+
+.bot-feed {
+  border-radius: 1rem;
+  border: 3px solid #eee;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.bot-feed:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* Bot Mouth */
+.bot-mouth {
+  border-radius: 1rem;
+  border: none;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+.bot-mouth:hover {
+  transform: translateY(-2px);
+}
+
+/* Buttons */
+.btn-main {
+  background: var(--main-orange);
+  color: #fff;
+  border: none;
+  transition: 0.2s ease;
+}
+
+.btn-main:hover {
+  background: var(--deep-orange);
+  color: #fff;
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.8s ease both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Footer */
+footer {
+  background: #fff;
+  border-top: 1px solid #eee;
+  padding: 1rem 0;
+  text-align: center;
+}
