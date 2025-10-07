@@ -1,60 +1,296 @@
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Activity 8 - Voice, Speech & Translation</title>
 
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap"
-        rel="stylesheet">
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <title>Activity 8 - Embedded Systems</title>
-
-    <link rel="stylesheet" href="/css/act8.css">
-
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/act8.css') }}">
 </head>
-
 <body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+    <div class="container">
+      <a href="/"><img src="{{ url_for('static', filename='images/embeddedico_32.png') }}" alt="Logo" width="32" height="32" class="me-2"></a>
+      <a class="navbar-brand fw-bold" href="/">Embedded Systems</a>
+    </div>
+  </nav>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
-        <div class="container">
-            <a href="/index.html"><img src="/images/embeddedico_32.png" alt="Logo" width="32" height="32"
-                    class="me-2"></a>
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="/index.html">
-                Embedded Systems
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link active" href="/index.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#activities">Activities</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-                </ul>
+  <!-- Main -->
+  <main class="container my-5" style="margin-top:100px;">
+    <h1 class="text-center fw-bold mb-4">Activity 8 - Voice, Speech & Translation</h1>
+    <p class="text-center text-muted">
+      Type or speak text — it will auto-detect the language, translate it to your selected language, and speak the translation aloud.
+    </p>
+
+    <div class="text-center mt-5">
+      <div class="mb-3">
+        <textarea id="ttsText" class="form-control w-75 mx-auto" rows="3" placeholder="Type or paste text here..."></textarea>
+      </div>
+
+      <div class="mb-3">
+        <select id="targetLang" class="form-select w-50 mx-auto">
+          <option value="en">English</option>
+          <option value="tl">Filipino</option>
+          <option value="es">Spanish</option>
+          <option value="ja">Japanese</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="ko">Korean</option>
+          <option value="zh-cn">Chinese (Simplified)</option>
+        </select>
+      </div>
+
+      <button id="translateBtn" class="btn btn-warning me-3">Translate & Speak</button>
+      <button id="listenBtn" class="btn btn-success">Voice to Speech</button>
+    </div>
+
+    <div id="output" class="mt-4 text-center"></div>
+
+    <hr class="my-5">
+    <h4 class="text-center">🎵 Saved Translations (server)</h4>
+    <div id="savedList" class="text-center mt-3">
+      <p class="text-muted">Loading saved audio...</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-3 bg-white border-top">
+    <p class="mb-0">© 2025 Activity 8 | Embedded Systems</p>
+  </footer>
+
+  <!-- Chatbot Floating Widget -->
+  <div id="chatHead">
+    <img src="{{ url_for('static', filename='images/Bot_32.png') }}" alt="Chat" />
+  </div>
+
+  <div id="chatBox">
+    <div class="chat-header d-flex justify-content-between align-items-center p-2">
+      <span>🤖 Chatbot</span>
+      <button id="closeChat" class="btn btn-sm btn-light text-danger fw-bold">&times;</button>
+    </div>
+    <div id="botMessages" style="max-height:300px; overflow-y:auto; padding:5px;"></div>
+    <div class="chat-input d-flex p-2">
+      <input id="userInput" type="text" class="form-control me-2" placeholder="Type a message..." />
+      <button id="sendBtn" class="btn btn-main">Send</button>
+    </div>
+  </div>
+
+  <!-- JS Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    /* -------------------------------
+       TRANSLATION + VOICE FUNCTIONS
+    --------------------------------*/
+    let lastOriginalText = "";
+    let lastTargetLang = "";
+
+    async function translateAndSpeak(text, targetLang, saveFlag = false) {
+      const translateBtn = document.getElementById('translateBtn');
+      const textBox = document.getElementById('ttsText');
+      translateBtn.disabled = true;
+      translateBtn.innerText = saveFlag ? "Saving & Speaking..." : "Translating & Speaking...";
+      document.getElementById('output').innerHTML = `<p>🌐 Translating and speaking... please wait.</p>`;
+
+      try {
+        const res = await fetch(`/act8/translate?text=${encodeURIComponent(text)}&target=${targetLang}&save=${saveFlag}`);
+        const data = await res.json();
+
+        if (data.status === "success") {
+          const audioUrl = data.audio_url || null;
+
+          document.getElementById('output').innerHTML = `
+            <p><strong>Detected Language:</strong> ${data.detected_language}</p>
+            <p><strong>Translated Text:</strong> ${data.translated_text}</p>
+            <div class="mt-3">
+              ${audioUrl ? `
+                <audio controls autoplay>
+                  <source src="${audioUrl}?nocache=${Date.now()}" type="audio/mpeg">
+                </audio>
+              ` : `<p class="text-muted">(No audio URL returned)</p>`}
             </div>
-        </div>
-    </nav>
+            <div class="mt-3">
+              <button id="saveAudioBtn" class="btn btn-outline-primary btn-sm">💾 Save This Audio</button>
+            </div>
+          `;
 
+          lastOriginalText = text;
+          lastTargetLang = targetLang;
 
-    <!-- Footer -->
-    <footer class="text-center py-3 bg-white border-top">
-        <p class="mb-0">© 2025 Embedded Systems | All Rights Reserved</p>
-    </footer>
+          document.getElementById("saveAudioBtn").onclick = async () => {
+            document.getElementById("saveAudioBtn").disabled = true;
+            document.getElementById("saveAudioBtn").innerText = "Saving...";
+            const saveRes = await fetch(`/act8/translate?text=${encodeURIComponent(lastOriginalText)}&target=${lastTargetLang}&save=true`);
+            const saveData = await saveRes.json();
+            if (saveData.status === "success") {
+              await loadSavedAudios();
+              document.getElementById('output').innerHTML += `<p class="text-success mt-2">Saved as: ${saveData.audio_url}</p>`;
+            } else {
+              document.getElementById('output').innerHTML += `<p class="text-danger mt-2">Saving failed: ${saveData.message}</p>`;
+            }
+            document.getElementById("saveAudioBtn").disabled = false;
+            document.getElementById("saveAudioBtn").innerText = "💾 Save This Audio";
+          };
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-        crossorigin="anonymous"></script>
+        } else {
+          document.getElementById('output').innerHTML = `<p class="text-danger">${data.message}</p>`;
+        }
+      } catch (err) {
+        document.getElementById('output').innerHTML = `<p class="text-danger">Error: ${err.message}</p>`;
+      } finally {
+        translateBtn.disabled = false;
+        translateBtn.innerText = "Translate & Speak";
+        textBox.value = "";
+      }
+    }
 
+    async function loadSavedAudios() {
+      const savedList = document.getElementById("savedList");
+      try {
+        const res = await fetch("/act8/saved_audios");
+        const data = await res.json();
+        if (!data || data.status !== "success") {
+          savedList.innerHTML = `<p class="text-muted">No saved audio yet.</p>`;
+          return;
+        }
+
+        const audios = data.audios || [];
+        if (audios.length === 0) {
+          savedList.innerHTML = `<p class="text-muted">No saved audio yet.</p>`;
+          return;
+        }
+
+        savedList.innerHTML = audios.slice().reverse().map(a => {
+          const audioUrl = `/audio/${encodeURIComponent(a.filename)}`;
+          const meta = `${a.timestamp ? a.timestamp + (a.language ? " • " + a.language.toUpperCase() : "") : ""}`;
+          const textPreview = a.text ? (a.text.length > 120 ? a.text.slice(0,120) + "…" : a.text) : "";
+          return `
+            <div class="mb-3">
+              <div>${meta}</div>
+              ${ textPreview ? `<div class="small text-muted mb-1">${textPreview}</div>` : "" }
+              <audio controls preload="none">
+                <source src="${audioUrl}?nocache=${Date.now()}" type="audio/mpeg">
+              </audio>
+              <div class="mt-1">
+                <a class="btn btn-sm btn-outline-secondary" href="${audioUrl}" download>⬇ Download</a>
+              </div>
+            </div>
+          `;
+        }).join("");
+      } catch (err) {
+        savedList.innerHTML = `<p class="text-danger">Failed to load saved audios: ${err.message}</p>`;
+      }
+    }
+
+    document.getElementById('translateBtn').addEventListener('click', async () => {
+      const text = document.getElementById('ttsText').value.trim();
+      const targetLang = document.getElementById('targetLang').value;
+      if (!text) {
+        document.getElementById('output').innerHTML = `<p class="text-danger">⚠️ Please enter text to translate.</p>`;
+        return;
+      }
+      await translateAndSpeak(text, targetLang, false);
+    });
+
+    document.getElementById('listenBtn').addEventListener('click', async () => {
+      const listenBtn = document.getElementById('listenBtn');
+      const targetLang = document.getElementById('targetLang').value;
+      listenBtn.disabled = true;
+      listenBtn.innerText = "Listening...";
+      document.getElementById('output').innerHTML = "<p>🎤 Listening... please speak.</p>";
+
+      try {
+        const res = await fetch("/act8/listen");
+        const data = await res.json();
+        if (data.status === "success") {
+          const recognizedText = data.recognized_text;
+          document.getElementById('ttsText').value = recognizedText;
+          document.getElementById('output').innerHTML = `
+            <p><strong>Recognized Speech:</strong> ${recognizedText}</p>
+            <p>🌐 Translating and speaking only the translated version in ${targetLang.toUpperCase()}...</p>
+          `;
+          await translateAndSpeak(recognizedText, targetLang, false);
+        } else {
+          document.getElementById('output').innerHTML = `<p class="text-danger">${data.message}</p>`;
+        }
+      } catch (err) {
+        document.getElementById('output').innerHTML = `<p class="text-danger">Error: ${err.message}</p>`;
+      } finally {
+        listenBtn.disabled = false;
+        listenBtn.innerText = "Voice to Speech";
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', loadSavedAudios);
+
+    /* -------------------------------
+       SIMPLE CHATBOT (SERVER-SIDE TTS)
+    --------------------------------*/
+    const chatHead = document.getElementById("chatHead");
+    const chatBox = document.getElementById("chatBox");
+    const closeChat = document.getElementById("closeChat");
+    const sendBtn = document.getElementById("sendBtn");
+    const userInput = document.getElementById("userInput");
+    const botMessages = document.getElementById("botMessages");
+
+    chatHead.onclick = () => {
+      chatBox.style.display = "flex";
+      chatHead.style.display = "none";
+      addBotMessage("Hi there! I'm your chatbot. I can echo your messages.");
+      speakBotServer("Hi there! I'm your chatbot. I can echo your messages.");
+    };
+
+    closeChat.onclick = () => {
+      chatBox.style.display = "none";
+      chatHead.style.display = "flex";
+    };
+
+    sendBtn.onclick = handleUserMessage;
+    userInput.addEventListener("keypress", e => { if (e.key === "Enter") handleUserMessage(); });
+
+    function handleUserMessage() {
+      const msg = userInput.value.trim();
+      if (!msg) return;
+      addUserMessage(msg);
+      userInput.value = "";
+      const reply = `You said: "${msg}"`;
+      addBotMessage(reply);
+      speakBotServer(reply);
+    }
+
+    function addUserMessage(text) {
+      const div = document.createElement("div");
+      div.className = "user-msg";
+      div.textContent = text;
+      botMessages.appendChild(div);
+      botMessages.scrollTop = botMessages.scrollHeight;
+    }
+
+    function addBotMessage(text) {
+      const div = document.createElement("div");
+      div.className = "bot-msg";
+      div.textContent = text;
+      botMessages.appendChild(div);
+      botMessages.scrollTop = botMessages.scrollHeight;
+    }
+
+    async function speakBotServer(text) {
+      try {
+        await fetch(`/act8/speak?text=${encodeURIComponent(text)}`);
+      } catch (err) {
+        console.error("Bot TTS error:", err);
+      }
+    }
+  </script>
 </body>
-
 </html>
