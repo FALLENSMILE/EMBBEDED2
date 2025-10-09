@@ -1,133 +1,132 @@
 :root {
-  --main-orange: #c56e12;
-  --deep-orange: #794207;
-  --light-beige: #fff4e1;
-  --accent-green: #16924a;
+  --main-orange: #ff7a18;
+  --deep-orange: #d35400;
+  --soft-gray: #f9fafc;
   --text-dark: #2c2c2c;
-  --light-gray: #f8f9fa;
+  --green: #16924a;
+  --blue: #2980b9;
+  --red: #c0392b;
 }
 
-/* Body */
 body {
   font-family: 'Bricolage Grotesque', sans-serif;
-  background: #fff;
+  background: var(--soft-gray);
   color: var(--text-dark);
-  margin: 0;
-  padding-top: 70px;
 }
 
-/* Navbar */
-.navbar-brand {
+/* Gradient header text */
+.text-gradient {
+  background: linear-gradient(90deg, var(--main-orange), var(--deep-orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   font-weight: 700;
-  font-size: 1.2rem;
-  color: var(--main-orange) !important;
 }
 
-.navbar-brand:hover {
-  color: var(--deep-orange) !important;
-}
-
-.nav-link {
-  color: var(--main-orange) !important;
-}
-
-.nav-link:hover {
-  color: var(--deep-orange) !important;
-}
-
-
-/* Headings */
-h1, h5 {
-  font-weight: 700;
-  color: var(--deep-orange);
+/* Container styling */
+.dashboard-container {
+  border-radius: 1rem;
+  background: #fff;
 }
 
 /* Card styling */
-.card {
+.custom-card {
   border: none;
   border-radius: 1rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.card:hover {
+
+.custom-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
 /* Buttons */
-.btn-main {
-  background: var(--main-orange);
-  color: #fff;
-  border: none;
-}
-.btn-main:hover {
-  background: var(--deep-orange);
-  color: #fff;
-}
-.btn-green {
-  background: var(--accent-green);
-  color: #fff;
-  border: none;
-}
-.btn-green:hover {
-  background: #0d7037;
-  color: #fff;
+.btn {
+  border-radius: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Audio list */
-#audioList .list-group-item {
-  border: none;
-  border-bottom: 1px solid #eee;
-  padding: 0.75rem 1rem;
-}
-#audioList .list-group-item:last-child {
-  border-bottom: none;
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.12);
 }
 
-/* Footer */
-footer {
-  font-size: 0.9rem;
-  background-color: #ffffff;
-  color: #777;
-  border-top: 1px solid #ddd;
+.btn-translate{
+background-color: var(--main-orange);
+color: var(--soft-gray);
+}
+.btn-translate:hover{
+  background-color: var(--deep-orange);
+  color: var(--soft-gray);
 }
 
-/* Chat Head */
+.btn-voice2speech{
+background-color: var(--green);
+}
+
+/* Chatbot */
 #chatHead {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
+  bottom: 25px;
+  right: 25px;
+  background: white;
   border-radius: 50%;
-  background: var(--main-orange);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: grab;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  z-index: 1050;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  padding: 10px;
+  cursor: pointer;
   transition: transform 0.2s ease;
+  z-index: 1000;
 }
-#chatHead:active { cursor: grabbing; }
-#chatHead:hover { transform: scale(1.05); }
-#chatHead img {
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
+#chatHead:hover {
+  transform: scale(1.1);
 }
 
-/* Chat Box */
 #chatBox {
-  position: fixed;
-  bottom: 90px;
-  right: 20px;
-  width: 320px;
-  max-height: 450px;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
   display: none;
   flex-direction: column;
-  z-index: 1051;
-  animation: slideUp 0.3s ease;
+  position: fixed;
+  bottom: 80px;
+  right: 25px;
+  width: 300px;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.chat-header {
+  background: linear-gradient(90deg, var(--main-orange), var(--deep-orange));
+  color: white;
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+}
+
+.user-msg, .bot-msg {
+  padding: 8px 12px;
+  border-radius: 10px;
+  margin: 6px;
+  max-width: 85%;
+}
+
+.user-msg {
+  background: var(--main-orange);
+  color: white;
+  align-self: flex-end;
+}
+
+.bot-msg {
+  background: var(--soft-gray);
+  color: var(--text-dark);
+  align-self: flex-start;
+}
+
+/* Fade-in animation */
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
