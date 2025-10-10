@@ -1,5 +1,7 @@
 from flask import Flask, render_template, jsonify, Response, request
 import os
+os.environ["GLOG_minloglevel"] = "2"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import signal
 import sys
 import atexit
@@ -11,6 +13,7 @@ import threading
 from jinja2 import ChoiceLoader, FileSystemLoader
 from gpiozero import Buzzer
 import time
+import mediapipe as mp
 
 # --- Paths ---
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -30,6 +33,8 @@ app.jinja_loader = ChoiceLoader([
 KNOWN_FACES = []
 KNOWN_NAMES = []
 current_unknown_encodings = []
+current_gesture = ""
+gesture_lock = threading.Lock()
 
 # --- Load saved faces ---
 if os.path.exists(DATABASE_FILE):
@@ -40,12 +45,15 @@ if os.path.exists(DATABASE_FILE):
     print(f"[INFO] Loaded {len(KNOWN_NAMES)} known faces from database.")
 
 # --- Buzzer Setup ---
-buzzer = Buzzer(21)  # BCM pin 21
+buzzer = Buzzer(21)
 
 # --- Cleanup ---
 def cleanup():
     print("[CLEANUP] Releasing resources...")
-    camera.cap.release()
+    try:
+        camera.cap.release()
+    except Exception:
+        pass
     cv2.destroyAllWindows()
     with open(DATABASE_FILE, "wb") as f:
         pickle.dump({"faces": KNOWN_FACES, "names": KNOWN_NAMES}, f)
@@ -63,6 +71,20 @@ atexit.register(cleanup)
 class VideoCaptureThread:
     def __init__(self, src=0):
         self.cap = cv2.VideoCapture(src)
+
+        # Try setting 1080p resolution
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+
+        width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        if width < 1280 or height < 720:
+            print("[WARNING] Camera does not support 1080p. Falling back to 720p.")
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        else:
+            print(f"[INFO] Using camera resolution: {width}x{height}")
+
         self.ret, self.frame = self.cap.read()
         self.lock = threading.Lock()
         threading.Thread(target=self.update, daemon=True).start()
@@ -78,6 +100,16 @@ class VideoCaptureThread:
             return self.ret, self.frame.copy()
 
 camera = VideoCaptureThread(0)
+
+# --- MediaPipe Hands Setup ---
+mp_hands = mp.solutions.hands
+mp_drawing = mp.solutions.drawing_utils
+hands_detector = mp_hands.Hands(
+    static_image_mode=False,
+    max_num_hands=2,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+)
 
 # --- Routes ---
 @app.route("/")
@@ -104,32 +136,65 @@ def act10_history_data():
         "unknown_count": len(current_unknown_encodings)
     })
 
-# --- Face Recognition Stream ---
+@app.route("/act10/gesture/data")
+def act10_gesture_data():
+    with gesture_lock:
+        return jsonify({"gesture": current_gesture})
+
+# --- Gesture Detection Helper ---
+def detect_gesture_from_landmarks(hand_landmarks, image_w, image_h):
+    tips = {"thumb": 4, "index": 8, "middle": 12, "ring": 16, "pinky": 20}
+    pip = {"index": 6, "middle": 10, "ring": 14, "pinky": 18}
+    mcp = {"thumb": 2}
+
+    lm = [(int(l.x * image_w), int(l.y * image_h), l.z) for l in hand_landmarks.landmark]
+    extended = {}
+    for finger in ["index", "middle", "ring", "pinky"]:
+        tip_y = lm[tips[finger]][1]
+        pip_y = lm[pip[finger]][1]
+        extended[finger] = tip_y < pip_y - 10
+
+    thumb_tip_x, thumb_tip_y, _ = lm[tips["thumb"]]
+    thumb_mcp_x, thumb_mcp_y, _ = lm[mcp["thumb"]]
+    thumb_extended_vertical = thumb_tip_y < thumb_mcp_y - 10
+    thumb_extended_horizontal = abs(thumb_tip_x - thumb_mcp_x) > 40
+    thumb_extended = thumb_extended_vertical or thumb_extended_horizontal
+
+    if thumb_extended and not (extended["index"] or extended["middle"] or extended["ring"] or extended["pinky"]):
+        return "Thumbs Up"
+
+    if extended["index"] and extended["middle"] and not extended["ring"] and not extended["pinky"]:
+        return "Peace"
+
+    return ""
+
+# --- Video Stream Generator ---
 frame_count = 0
-PROCESS_EVERY_N_FRAMES = 3
 
 def gen_frames():
-    global current_unknown_encodings, frame_count
+    global current_unknown_encodings, frame_count, current_gesture
     while True:
         success, frame = camera.read()
         if not success:
             break
 
         frame_count += 1
-        small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-        rgb_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        if frame_count % PROCESS_EVERY_N_FRAMES == 0:
+        do_face = (frame_count % 10) != 0
+        do_hand = not do_face
+
+        if do_face:
+            small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+            rgb_small = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+            face_locations = face_recognition.face_locations(rgb_small)
+            face_encodings = face_recognition.face_encodings(rgb_small, face_locations)
+
             current_unknown_encodings = []
-
-            face_locations = face_recognition.face_locations(rgb_frame)
-            face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
-
-            unknown_detected = False  # Flag to track unknown faces
+            unknown_detected = False
 
             for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
                 name = "Unknown"
-
                 if KNOWN_FACES:
                     matches = face_recognition.compare_faces(KNOWN_FACES, face_encoding, tolerance=0.5)
                     if True in matches:
@@ -142,20 +207,37 @@ def gen_frames():
                     current_unknown_encodings.append(face_encoding)
                     unknown_detected = True
 
-                # Scale box to original frame size
-                top *= 4
-                right *= 4
-                bottom *= 4
-                left *= 4
-
-                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                top *= 4; right *= 4; bottom *= 4; left *= 4
+                color = (0, 0, 255) if name == "Unknown" else (0, 255, 0)
+                cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
                 cv2.putText(frame, name, (left, top - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
-            # Activate buzzer only if unknown faces detected
             if unknown_detected:
-                threading.Thread(target=lambda: buzzer.on() or time.sleep(0.2) or buzzer.off(),
+                threading.Thread(target=lambda: buzzer.on() or time.sleep(0.4) or buzzer.off(),
                                  daemon=True).start()
+
+        elif do_hand:
+            results = hands_detector.process(rgb_frame)
+            found_gesture = ""
+            if results.multi_hand_landmarks:
+                for hand_landmarks in results.multi_hand_landmarks:
+                    h, w, _ = frame.shape
+                    gesture = detect_gesture_from_landmarks(hand_landmarks, w, h)
+                    if gesture:
+                        found_gesture = gesture
+                    mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+
+            with gesture_lock:
+                current_gesture = found_gesture if found_gesture else ""
+
+        with gesture_lock:
+            gesture_text = current_gesture
+
+        if gesture_text:
+            cv2.rectangle(frame, (10, 10), (250, 60), (0, 0, 0), -1)
+            cv2.putText(frame, f"Gesture: {gesture_text}", (20, 45),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
 
         ret, buffer = cv2.imencode('.jpg', frame)
         yield (b'--frame\r\n'
@@ -165,7 +247,6 @@ def gen_frames():
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# --- Register Unknown Face ---
 @app.route("/act10/register", methods=['POST'])
 def register_face():
     global current_unknown_encodings
@@ -177,24 +258,22 @@ def register_face():
     if not name:
         return jsonify({"status": "error", "message": "Name is required"})
 
-    # Register first unknown face
     face_encoding = current_unknown_encodings[0]
     KNOWN_FACES.append(face_encoding)
     KNOWN_NAMES.append(name)
 
-    # Save snapshot
     ret, frame = camera.read()
     if ret:
         face_id = len(KNOWN_NAMES)
         filepath = os.path.join(SAVE_DIR, f"{name}_{face_id}.jpg")
         cv2.imwrite(filepath, frame)
 
-    # Update database
     with open(DATABASE_FILE, "wb") as f:
         pickle.dump({"faces": KNOWN_FACES, "names": KNOWN_NAMES}, f)
 
+    print(f"[INFO] Auto-registered new face: {name}")
     return jsonify({"status": "success", "message": f"Registered {name}"})
 
 # --- Main ---
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, threaded=True)

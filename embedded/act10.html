@@ -2,129 +2,244 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity 10 - Face Recognition</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap"
-        rel="stylesheet">
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap"
+    rel="stylesheet">
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        crossorigin="anonymous">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/act10.css') }}">
+  <title>Activity 10 - Embedded Systems</title>
+
+  <link rel="stylesheet" href="/css/act10.css">
+  <style>
+    #gestureBox {
+      width: 240px;
+      margin: 12px auto;
+      text-align: center;
+    }
+
+    #videoContainer img {
+      max-width: 100%;
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 🔔 Unknown face alert box */
+    #unknownAlert {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 2000;
+      display: none;
+      padding: 15px 20px;
+      background-color: #dc3545;
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      animation: fadeInOut 3s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      10% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
-        <div class="container">
-            <a href="/index.html"><img src="/images/embeddedico_32.png" alt="Logo" width="32" height="32"
-                    class="me-2"></a>
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="/index.html">
-                Embedded Systems
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link active fw-semibold" href="/index.html">Home</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main class="container my-5 pt-5">
-        <div class="dashboard-container p-4 rounded-4 shadow-lg animate-fade-in text-center">
-            <h2 class="fw-bold mb-3 text-gradient">Activity 10 - Face Recognition</h2>
-            <p class="text-muted mb-4">Your Mini-Bot actor will perform face recognition in real time.</p>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+    <div class="container">
+      <a href="/index.html"><img src="/images/embeddedico_32.png" alt="Logo" width="32" height="32" class="me-2"></a>
+      <a class="navbar-brand fw-bold d-flex align-items-center" href="/index.html">
+        Embedded Systems
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link active" href="/index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#activities">Activities</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-            <!-- Mini-Bot Face -->
-            <div class="mini-bot mx-auto mb-4">
-                <!-- Bot Eyes (Camera Feed) -->
-                <div class="bot-eyes d-flex justify-content-center">
-                    <div class="eye p-2">
-                        <img src="{{ url_for('video_feed') }}" alt="Face Recognition Feed"
-                            class="img-fluid rounded shadow bot-feed">
-                    </div>
-                </div>
+  <!-- 🔔 Unknown face alert -->
+  <div id="unknownAlert">⚠️ Unknown / Unauthorized Face Detected!</div>
 
-                <!-- Bot Mouth (Register Form) -->
-                <div class="bot-mouth card p-3 shadow-sm mx-auto mt-4" style="max-width:420px;">
-                    <h5 class="mb-3">Register Unknown Face</h5>
-                    <form id="registerForm">
-                        <div class="input-group mb-3">
-                            <input type="text" id="name" name="name" class="form-control" placeholder="Enter name">
-                            <button class="btn btn-main" type="submit" disabled>Register</button>
-                        </div>
-                    </form>
-                    <div id="registerResult" class="text-muted small"></div>
-                </div>
-            </div>
-        </div>
-    </main>
+  <!-- Main Content -->
+  <main class="container my-5 pt-5">
+    <div class="text-center">
+      <h2 class="fw-bold mb-4">Activity 10 - Face Recognition + Gesture Test</h2>
+      <p class="text-muted">This activity demonstrates real-time face recognition and simple hand gesture detection
+        (Peace / Thumbs Up).</p>
 
-    <!-- Footer -->
-    <footer class="text-center py-3 bg-white border-top">
-        <p class="mb-0">© 2025 Embedded Systems | All Rights Reserved</p>
-    </footer>
+      <!-- Video Feed -->
+      <div id="videoContainer" class="d-flex justify-content-center mb-3">
+        <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Face Recognition Feed"
+          class="img-fluid border rounded shadow">
+      </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        crossorigin="anonymous"></script>
+      <!-- Gesture display -->
+      <div id="gestureBox" class="card p-3 shadow-sm mx-auto" style="max-width:420px;">
+        <h5 class="mb-2">Detected Gesture</h5>
+        <div id="gestureText" class="display-6 text-primary">—</div>
+        <div class="text-muted small mt-2">Try showing a peace sign (✌️) or thumbs up (👍) to the camera.</div>
+      </div>
 
-    <!-- Face Recognition Register Script -->
-    <script>
-        const registerBtn = document.querySelector("#registerForm button");
-        const registerResult = document.getElementById("registerResult");
-        const nameInput = document.getElementById("name");
+      <!-- Register Form -->
+      <div class="card p-3 shadow-sm mx-auto mt-4" style="max-width:400px;">
+        <h5 class="mb-3">Register Unknown Face</h5>
+        <form id="registerForm">
+          <div class="input-group mb-3">
+            <input type="text" id="name" name="name" class="form-control" placeholder="Enter name">
+            <button class="btn btn-primary" type="submit" disabled>Register</button>
+          </div>
+        </form>
+        <div id="registerResult" class="text-muted small"></div>
+      </div>
+    </div>
+  </main>
 
-        // Check for unknown faces
-        async function checkUnknownFaces() {
-            try {
-                const res = await fetch("/act10/history/data");
-                const data = await res.json();
+  <!-- Footer -->
+  <footer class="text-center py-3 bg-white border-top">
+    <p class="mb-0">© 2025 Embedded Systems | All Rights Reserved</p>
+  </footer>
 
-                if (data.unknown_count && data.unknown_count > 0) {
-                    registerBtn.disabled = false;
-                    registerBtn.textContent = "Register";
-                } else {
-                    registerBtn.disabled = true;
-                    registerBtn.textContent = "No Unknown Face";
-                }
-            } catch (err) {
-                console.error(err);
-                registerBtn.disabled = true;
-                registerBtn.textContent = "Error";
-            }
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+
+  <!-- Script -->
+  <script>
+    const registerBtn = document.querySelector("#registerForm button");
+    const registerResult = document.getElementById("registerResult");
+    const nameInput = document.getElementById("name");
+    const gestureTextEl = document.getElementById("gestureText");
+    const unknownAlert = document.getElementById("unknownAlert");
+
+    let lastUnknownCount = 0;
+    let alertTimeout;
+    let unknownCount = 0;
+    let lastGesture = "";
+
+    // 🔔 Show alert box
+    function showUnknownAlert() {
+      unknownAlert.style.display = "block";
+      clearTimeout(alertTimeout);
+      alertTimeout = setTimeout(() => {
+        unknownAlert.style.display = "none";
+      }, 3000);
+    }
+
+    // 🔄 Poll unknown face data
+    async function checkUnknownFaces() {
+      try {
+        const res = await fetch("/act10/history/data");
+        const data = await res.json();
+
+        unknownCount = data.unknown_count || 0;
+
+        if (unknownCount > 0) {
+          registerBtn.disabled = false;
+          registerBtn.textContent = "Register";
+
+          // 🔔 Show alert on new unknown
+          if (data.unknown_count !== lastUnknownCount) {
+            showUnknownAlert();
+            new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+          }
+        } else {
+          registerBtn.disabled = true;
+          registerBtn.textContent = "No Unknown Face";
         }
 
-        // Poll every 1s
-        setInterval(checkUnknownFaces, 1000);
+        lastUnknownCount = data.unknown_count || 0;
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-        // Register face
-        document.getElementById("registerForm").addEventListener("submit", async function (e) {
-            e.preventDefault();
-            const formData = new FormData();
-            formData.append("name", nameInput.value);
+    // 🖐️ Poll gesture data
+    async function pollGesture() {
+      try {
+        const res = await fetch("/act10/gesture/data");
+        const data = await res.json();
+        const g = data.gesture || "";
+        gestureTextEl.textContent = g || "—";
 
-            let res = await fetch("/act10/register", { method: "POST", body: formData });
-            let data = await res.json();
-            registerResult.textContent = data.message;
+        // 🧠 Auto-register logic: "Thumbs Up" + unknown face + name entered
+        if (g === "Thumbs Up" && lastGesture !== "Thumbs Up" && unknownCount > 0 && nameInput.value.trim()) {
+          await autoRegister();
+        }
 
-            if (data.status === "success") {
-                nameInput.value = "";
-                registerBtn.disabled = true;
-            }
-        });
-    </script>
+        lastGesture = g;
+      } catch (err) {
+        console.error("Gesture fetch error:", err);
+      }
+    }
+
+    // 🪄 Auto register function
+    async function autoRegister() {
+      const formData = new FormData();
+      formData.append("name", nameInput.value.trim());
+
+      try {
+        const res = await fetch("/act10/register", { method: "POST", body: formData });
+        const data = await res.json();
+        registerResult.textContent = "✅ " + data.message;
+
+        if (data.status === "success") {
+          nameInput.value = "";
+          registerBtn.disabled = true;
+          new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg").play();
+        }
+      } catch (err) {
+        console.error("Auto-register failed:", err);
+      }
+    }
+
+    // Manual register
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await autoRegister();
+    });
+
+    // Intervals
+    setInterval(checkUnknownFaces, 1000);
+    setInterval(pollGesture, 600);
+    pollGesture();
+  </script>
 </body>
 
 </html>
